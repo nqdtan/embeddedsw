@@ -195,11 +195,12 @@ static AieRC XAie_DebugIO_MaskPoll(void *IOInst, u64 RegOff, u32 Mask, u32 Value
 #ifndef PL
 	printf("MP: 0x%lx, 0x%x, 0x%x, 0x%d\n", DebugIOInst->BaseAddr + RegOff,
 			Mask, Value, TimeOutUs);
-#else
-	PL_MaskPoll(DebugIOInst->BaseAddr + RegOff,
-			Mask, Value, TimeOutUs);
-#endif
 	return XAIE_ERR;
+#else
+	AieRC Ret = PL_MaskPoll(DebugIOInst->BaseAddr + RegOff,
+			Mask, Value, TimeOutUs);
+	return Ret;
+#endif
 }
 
 /*****************************************************************************/
@@ -220,15 +221,11 @@ static AieRC XAie_DebugIO_MaskPoll(void *IOInst, u64 RegOff, u32 Mask, u32 Value
 static AieRC XAie_DebugIO_BlockWrite32(void *IOInst, u64 RegOff, u32 *Data,
 		u32 Size)
 {
-#ifndef PL
 	for(u32 i = 0U; i < Size; i ++) {
 		XAie_DebugIO_Write32(IOInst, RegOff + i * 4U, *Data);
 		Data++;
 	}
-#else
-	XAie_DebugIO *DebugIOInst = (XAie_DebugIO *)IOInst;
-	PL_BlockWrite32(DebugIOInst->BaseAddr + RegOff, *Data, Size);
-#endif
+
 	return XAIE_OK;
 }
 
